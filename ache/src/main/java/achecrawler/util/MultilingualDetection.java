@@ -12,29 +12,26 @@ import com.github.pemistahl.lingua.api.*;
 import static com.github.pemistahl.lingua.api.Language.*;
 
 import achecrawler.target.model.Page;
+import java.util.stream.Collectors;
 
 public class MultilingualDetection {
+
+    public MultilingualDetection(ArrayList<String> languages) {
+        String[] langs = languages.toArray(new String[0]);
+        this.languages = new ArrayList<Language>();
+        
+        for (String lang : langs) {
+            this.languages.add(Language.valueOf(lang));
+        }
+        
+        detector = LanguageDetectorBuilder.fromAllLanguages().withPreloadedLanguageModels().build();
+ 
+    }
     
     private static final Logger logger = LoggerFactory.getLogger(MultilingualDetection.class);
     private static LanguageDetector detector;
-    private static List<Language> languages;
-    /**
-     *  Loads language profiles from resources folder
-     */
-    static {
-        
-        languages = new ArrayList<>();
-        languages.add(Language.ENGLISH);
-        languages.add(Language.GERMAN);
+    private ArrayList<Language> languages;
 
-        try {
-            
-            detector = LanguageDetectorBuilder.fromLanguages(Language.ENGLISH, Language.FRENCH, Language.GERMAN, Language.SPANISH).build();;
-            
-        } catch (Exception e) {
-            throw new IllegalStateException("Could not load language profiles.");
-        }
-    }
 
     /**
      * Try to detect the language of the text in the String.
@@ -42,7 +39,7 @@ public class MultilingualDetection {
      * @param content
      * @return true if the String contains English language, false otherwise
      */
-    public String isLanguage(String content) {
+    public Language isLanguage(String content) {
         try {
 
             if (content == null || content.isEmpty()) {
@@ -50,7 +47,7 @@ public class MultilingualDetection {
             }
             
             Language detectedLanguage = detector.detectLanguageOf(content);
-            return detectedLanguage.toString();
+            return detectedLanguage;
 
         } catch (Exception ex) {
             logger.warn("Problem while detecting language in text: " + content, ex);
@@ -66,7 +63,26 @@ public class MultilingualDetection {
      */
     public Boolean isValidLanguage(Page page) {
         try {
-            String langdetect = isLanguage(page.getParsedData().getCleanText());            
+            Language langdetect = isLanguage(page.getParsedData().getCleanText());
+            logger.info("Language detected is " + langdetect + " for " + page.getURL().toString());
+            return languages.contains(langdetect);
+        } catch (Exception e) {
+            System.out.println("Exception in detect_page");
+            return false;
+        }
+    }
+    
+    
+    /**
+     * Try to detect the language of contents of the page.
+     * 
+     * @param page
+     * @return true if the page is in a valid language, false otherwise
+     */
+    public Boolean isValidLanguage(String page) {
+        try {
+            Language langdetect = isLanguage(page);
+            logger.info("Language detected is " + langdetect);            
             return languages.contains(langdetect);
         } catch (Exception e) {
             System.out.println("Exception in detect_page");

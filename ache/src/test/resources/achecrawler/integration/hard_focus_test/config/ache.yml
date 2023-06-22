@@ -1,3 +1,0 @@
-target_storage.hard_focus: true
-link_storage.link_strategy.outlinks: true
-link_storage.scheduler.host_min_access_interval: 1

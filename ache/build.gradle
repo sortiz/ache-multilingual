@@ -1,0 +1,183 @@
+plugins {
+    id 'java'
+    id 'idea'
+    id 'application'
+    id 'jacoco'
+    id 'com.github.kt3k.coveralls' version '2.12.0'
+}
+
+compileJava.options.encoding = "UTF-8"
+version = '0.16.0-SNAPSHOT'
+mainClassName = 'achecrawler.Main'
+applicationDefaultJvmArgs = ["-Dname=ache -XX:+UseConcMarkSweepGC -XX:+HeapDumpOnOutOfMemoryError"]
+
+ext.versions = [
+    com_fasterxml_jackson: '2.14.2',
+    io_dropwizard_metrics: '4.2.17',
+]
+
+dependencies {
+    // Sub-projects
+    implementation project(':crawler-commons')
+    // Logging
+    implementation libraries.slf4j_api
+    implementation libraries.logback
+    // ADDED LINGUA    
+    implementation group: 'com.github.pemistahl', name: 'lingua', version: '1.2.2'
+    // Commons
+    implementation group: 'com.google.guava', name: 'guava', version: '23.0'
+    implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
+    implementation group: 'org.apache.commons', name: 'commons-compress', version: '1.22'
+    implementation group: 'commons-codec', name: 'commons-codec', version: '1.15'
+    implementation group: 'commons-validator', name: 'commons-validator', version: '1.7'
+    implementation group: 'com.github.crawler-commons', name: 'crawler-commons', version: '1.2'
+    // CLI
+    implementation group: 'io.airlift', name: 'airline', version: '0.9'
+    // Data serialization
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: versions.com_fasterxml_jackson
+    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-cbor', version: versions.com_fasterxml_jackson
+    implementation group: 'com.fasterxml.jackson.dataformat', name: 'jackson-dataformat-yaml', version: versions.com_fasterxml_jackson
+    implementation group: 'com.esotericsoftware', name: 'kryo', version: '4.0.2'
+    implementation group: 'de.javakaffee', name: 'kryo-serializers', version: '0.43'
+    // REST server dependencies
+    implementation group: 'io.javalin', name: 'javalin', version: '4.2.0'
+    // Metrics and monitoring
+    implementation group: 'io.dropwizard.metrics', name: 'metrics-core', version: versions.io_dropwizard_metrics
+    implementation group: 'io.dropwizard.metrics', name: 'metrics-json', version: versions.io_dropwizard_metrics
+    implementation group: 'io.dropwizard.metrics', name: 'metrics-jvm', version: versions.io_dropwizard_metrics
+    // Data management and repositories
+    implementation group: 'org.rocksdb', name: 'rocksdbjni', version: '6.25.3'
+    implementation group: 'org.elasticsearch.client', name: 'elasticsearch-rest-client', version: '5.6.7'
+    implementation group: 'org.apache.kafka', name: 'kafka-clients', version: '3.4.0'
+    implementation('org.netpreserve.commons:webarchive-commons:1.1.9') {
+        exclude group: 'org.apache.hadoop', module: 'hadoop-core'
+        exclude group: 'junit', module: 'junit'
+    }
+    // Data parsing and extraction
+    implementation group: 'com.syncthemall', name: 'boilerpipe', version: '1.2.2'
+    implementation group: 'net.sourceforge.nekohtml', name: 'nekohtml', version: '1.9.22'
+    implementation group: 'org.jsoup', name: 'jsoup', version: '1.15.1'
+    implementation group: 'org.apache.lucene', name: 'lucene-analyzers-common', version: '8.11.1'
+    // HTTP libraries
+    implementation group: 'com.squareup.okhttp3', name: 'okhttp', version: '4.10.0'
+    implementation group: 'org.apache.httpcomponents', name: 'httpclient', version: '4.5.14'
+    // Others
+    implementation group: 'com.github.haifengl', name: 'smile-core', version: '1.5.3'
+    implementation group: 'org.roaringbitmap', name: 'RoaringBitmap', version: '0.9.39'
+    // TODO: fill these in from Maven Central instead of that local libs dir
+    //implementation files('libs/langdetect-03-03-2014.jar') // TODO: upgrade to newer version from maven
+    //implementation files('libs/jsonic-1.2.0.jar') // required by by langdetect-03-03-2014.jar
+
+    // Test framework dependencies
+    testImplementation libraries.junit_jupiter_api
+    testImplementation libraries.junit_jupiter_params
+    testRuntimeOnly libraries.junit_jupiter_engine
+    testImplementation libraries.mockito
+    testImplementation libraries.assertj_core
+}
+
+//
+// Make sure that ache-dashboard is compiled and copied into resources folder
+// before the resources are processed and bundled into the JAR file
+//
+processResources {
+    dependsOn ':ache-dashboard:install'
+}
+
+
+//
+// Adds version to final JAR artifact
+//
+jar {
+  manifest {
+    attributes(
+      "Implementation-Title": project.name,
+      "Implementation-Version": archiveVersion
+    )
+  }
+}
+
+
+//
+// Copies config folder into final distribution file
+//
+task copyConfig {
+    def f = file("$buildDir/config")
+    outputs.dir f
+    doLast {
+        copy {
+            from rootProject.file("config/").absolutePath
+            into "$buildDir/config"
+            exclude "sample_model", "sample_training_data", "sample.seeds"
+        }
+    }
+}
+applicationDistribution.from(copyConfig) {
+    into "config"
+}
+
+
+//
+// Integration for test coverage service: coveralls
+//
+jacocoTestReport {
+    reports {
+        xml.required = true // coveralls plugin depends on xml format report
+        html.required = true
+    }
+    afterEvaluate {
+        classDirectories.from = files(classDirectories.files.collect {
+            fileTree(
+                dir: it,
+                exclude: ['achecrawler/tools/**']
+            )
+        })
+    }
+}
+
+
+//
+// Task to compute total size of dependencies:
+//    gradle depsize
+// Taken from:
+// - https://gist.github.com/medvedev/968119d7786966d9ed4442ae17aca279
+// - https://stackoverflow.com/questions/22175847/maven-gradle-way-to-calculate-the-total-size-of-a-dependency-with-all-its-transi
+//
+tasks.register("depsize") {
+    description = 'Prints dependencies for "default" configuration'
+    doLast() {
+        listConfigurationDependencies(configurations.default)
+    }
+}
+
+tasks.register("depsize-all-configurations") {
+    description = 'Prints dependencies for all available configurations'
+    doLast() {
+        configurations
+                .findAll { it.isCanBeResolved() }
+                .each { listConfigurationDependencies(it) }
+    }
+}
+
+def listConfigurationDependencies(Configuration configuration) {
+    def formatStr = "%,10.2f"
+
+    def size = configuration.collect { it.length() / (1024 * 1024) }.sum()
+
+    def out = new StringBuffer()
+    out << "\nConfiguration name: \"${configuration.name}\"\n"
+    if (size) {
+        out << 'Total dependencies size:'.padRight(65)
+        out << "${String.format(formatStr, size)} Mb\n\n"
+
+        configuration.sort { -it.length() }
+                .each {
+                    out << "${it.name}".padRight(65)
+                    out << "${String.format(formatStr, (it.length() / 1024))} kb\n"
+                }
+    } else {
+        out << 'No dependencies found'
+    }
+    println(out)
+}
+

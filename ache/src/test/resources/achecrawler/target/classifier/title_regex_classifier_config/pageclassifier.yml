@@ -1,3 +1,0 @@
-type: title_regex
-parameters:
-  regular_expression: "sometext"
