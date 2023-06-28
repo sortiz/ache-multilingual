@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.css": "./static/css/main.51cfc907.css",
+    "main.js": "./static/js/main.c49a5412.js",
+    "static/media/glyphicons-halflings-regular.svg": "./static/media/glyphicons-halflings-regular.060b2710bdbbe3dfe48b.svg",
+    "static/media/glyphicons-halflings-regular.ttf": "./static/media/glyphicons-halflings-regular.4692b9ec53fd5972caa2.ttf",
+    "static/media/glyphicons-halflings-regular.woff": "./static/media/glyphicons-halflings-regular.82b1212e45a2bc35dd73.woff",
+    "static/media/glyphicons-halflings-regular.eot": "./static/media/glyphicons-halflings-regular.5be1347c682810f199c7.eot",
+    "static/media/glyphicons-halflings-regular.woff2": "./static/media/glyphicons-halflings-regular.be810be3a3e14c682a25.woff2",
+    "static/media/ache-logo.png": "./static/media/ache-logo.23de51536fe805e9ac61.png",
+    "static/media/search.svg": "./static/media/search.a734c75cb9bcd34102e5.svg",
+    "index.html": "./index.html",
+    "main.51cfc907.css.map": "./static/css/main.51cfc907.css.map",
+    "main.c49a5412.js.map": "./static/js/main.c49a5412.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.51cfc907.css",
+    "static/js/main.c49a5412.js"
+  ]
+}
