@@ -20,15 +20,27 @@ public class ArffFileWriter {
 
         List<String> attributes = new ArrayList<String>();
         for (VSMElement elem : features) {
-            header.append("@ATTRIBUTE ");
+            
             if (elem.getWord().equals("class")) {
                 // This is a hack, weka does not allow attribute with name class.
                 elem.setWord("class-random-string");
             }
-            header.append(elem.getWord());
-            attributes.add(elem.getWord());
-            header.append(" REAL");
-            header.append("\n");
+            if (elem.getWord().matches("[a-zA-Z0-9]+")) {
+                header.append("@ATTRIBUTE ");
+                header.append(elem.getWord());
+                attributes.add(elem.getWord());
+                header.append(" REAL");
+                header.append("\n");           
+            }
+            // This is a hack, weka does not allow weird symbols and ommitting these words throws ResponseIndex error...
+            else{
+                header.append("@ATTRIBUTE ");
+                header.append("xxxxxx");
+                attributes.add("xxxxxx");
+                header.append(" REAL");
+                header.append("\n");   
+            }
+            
         }
         header.append("@ATTRIBUTE class {");
         for (int i = 0; i < trainingData.length - 1; i++) {

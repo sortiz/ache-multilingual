@@ -9,6 +9,8 @@ import java.util.Set;
 import achecrawler.util.SmileUtil;
 import smile.classification.RandomForest;
 import smile.classification.SVM;
+import smile.classification.KNN;
+import smile.math.distance.EuclideanDistance;
 import smile.classification.SoftClassifier;
 import smile.data.AttributeDataset;
 import smile.data.parser.ArffParser;
@@ -31,12 +33,15 @@ public class SmileTargetClassifierBuilder {
         String modelFilePath = Paths.get(outputPath, "pageclassifier.model").toString();
 
         ArffParser arffParser = new ArffParser();
+        System.out.println("ArffParser responseIndex: " + responseIndex);
         arffParser.setResponseIndex(responseIndex);
 
         Path arffFilePath = Paths.get(trainingPath, "/smile_input.arff");
         FileInputStream fis = new FileInputStream(arffFilePath.toFile());
         System.out.println("Writting temporarily data file to: " + arffFilePath.toString());
 
+
+        System.out.println("ArffParser responseIndex: " + arffParser.getResponseIndex());
         AttributeDataset trainingData = arffParser.parse(fis);
         double[][] x = trainingData.toArray(new double[trainingData.size()][]);
         int[] y = trainingData.toArray(new int[trainingData.size()]);
@@ -132,6 +137,9 @@ public class SmileTargetClassifierBuilder {
         } else if (learner.equals("RandomForest")) {
             RandomForest randomForest = new RandomForest(x, y, 100);
             return randomForest;
+        } else if (learner.equals("KNN")) {
+            KNN knn = new KNN(x, y, new EuclideanDistance());
+            return knn;
         } else {
             throw new IllegalArgumentException("Unknow learning algorithm: " + learner);
         }

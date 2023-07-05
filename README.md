@@ -27,6 +27,13 @@ target_storage.languages: ["FRENCH", "SPANISH"]
 
 An example config file can be founf in the folder "inp"
 
+Additionally, we have solved a problem with the arff reader and added KNN (with K=5 and using the Euclidean Distance) as possible classifier. It can be invoked using:
+
+```
+ache buildModel -c \config\sample_config\stopwords.txt -t \config\sample_training_data -o \config\sample_model -l KNN
+
+```
+
 
 # ACHE Focused Crawler
 
