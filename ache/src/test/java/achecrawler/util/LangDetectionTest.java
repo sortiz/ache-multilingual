@@ -3,6 +3,8 @@ package achecrawler.util;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList; 
+
 import static org.assertj.core.api.Assertions.assertThat;
 
 class LangDetectionTest {
@@ -11,7 +13,10 @@ class LangDetectionTest {
 
     @BeforeAll
     static  void setUpClass() {
-        langDetect = new MultilingualDetection();
+		ArrayList<String> languages = new ArrayList<String>();
+		languages.add("SPANISH");
+		languages.add("GALICIAN");
+        langDetect = new MultilingualDetection(languages);
 //        langDetect.init("libs/profiles/");
     }
 

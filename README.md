@@ -34,6 +34,7 @@ ache buildModel -c \config\sample_config\stopwords.txt -t \config\sample_trainin
 
 ```
 
+In order to use it, you have to modify the gradle.build inside the ache folder to add the [Lingua](https://github.com/pemistahl/lingua/) dependency OR you can add a jar named "lingua-with-dependencies.jar" into the libs file. You can download our version (that added GALICIAN to the existant languages in ) [here](https://delicias.dia.fi.upm.es/nextcloud/index.php/s/xMxpxaSiRaSL7k5).
 
 # ACHE Focused Crawler
 

@@ -68,7 +68,7 @@ target_storage.visited_page_limit: 10000000
 # Store only pages that contain texts in languages of interest using lingua
 target_storage.language_detection_enabled: true
 # Languages allowed
-target_storage.languages: ["FRENCH", "SPANISH"]
+target_storage.languages: ["SPANISH", "GALICIAN"]
 
 #
 # Configurations for Link Storage
@@ -77,7 +77,7 @@ target_storage.languages: ["FRENCH", "SPANISH"]
 # Max number of pages to be crawled from each web domain
 link_storage.max_pages_per_domain: 100
 # Restricts the crawler to crawl the websites provided as seeds
-link_storage.link_strategy.use_scope: false
+link_storage.link_strategy.use_scope: true
 # Allows the crawler to follow forward links
 link_storage.link_strategy.outlinks: true
 # Gets backlinks of the pages from a search engine used by the bipartite crawling
